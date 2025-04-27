@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Particle Sphere</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #001a00; /* Dark green background */
+            color: #00ff00; /* Optional: Green text for any future content */
+            border-radius: 50%; /* Optional: Rounded corners for the body */
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Scene, Camera, Renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Particle Geometry
+        const particleCount = 1000;
+        const particles = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
+
+        for (let i = 0; i < particleCount; i++) {
+            const phi = Math.acos(2 * Math.random() - 1);
+            const theta = 2 * Math.PI * Math.random();
+
+            const x = Math.sin(phi) * Math.cos(theta);
+            const y = Math.sin(phi) * Math.sin(theta);
+            const z = Math.cos(phi);
+
+            positions.set([x, y, z], i * 3);
+        }
+
+        particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+        // Particle Material
+        const particleMaterial = new THREE.PointsMaterial({
+            color: 0x00ff00, 
+            size: 0.02, 
+            sizeAttenuation: true, 
+            map: new THREE.TextureLoader().load('https://threejs.org/examples/textures/sprites/circle.png'), //circle texture
+            transparent: true, 
+        });
+
+        // Particle System
+        const particleSystem = new THREE.Points(particles, particleMaterial);
+        scene.add(particleSystem);
+
+        // Camera Position
+        camera.position.z = 3;
+
+        // Mouse Movement Variables
+        let mouseX = 0;
+        let mouseY = 0;
+
+        // Event Listener for Mouse Movement
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+        });
+
+        // Event Listener for Touch Movement (Mobile)
+        document.addEventListener('touchmove', (event) => {
+            if (event.touches.length > 0) {
+                mouseX = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
+                mouseY = -(event.touches[0].clientY / window.innerHeight) * 2 + 1;
+            }
+        });
+
+        // Event Listener for Touch End (Mobile)
+        document.addEventListener('touchend', (event) => {
+            mouseX = 0;
+            mouseY = 0;
+        });
+
+        //
+
+
+
+        // Animation Loop
+        const animate = () => {
+            requestAnimationFrame(animate);
+
+            // Update rotation based on mouse movement
+            particleSystem.rotation.y += 0.002;
+            particleSystem.rotation.x += mouseY * 0.01;
+            particleSystem.rotation.y += mouseX * 0.01;
+
+            renderer.render(scene, camera);
+        };
+
+
+
+        animate();
+
+        // Handle Window Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
